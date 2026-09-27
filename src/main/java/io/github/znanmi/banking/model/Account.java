@@ -24,4 +24,22 @@ public class Account {
   public String getAccountNumber() {
     return accountNumber;
   }
+
+  public void debit(BigDecimal amount) {
+    if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) { // compareTo, returns a negative number, zero, or a
+                                                                    // positive number
+      throw new IllegalArgumentException("Debit amount must be greater than 0");
+    }
+    if (amount.compareTo(balance) > 0) {
+      throw new IllegalStateException("Insufficient funds in account " + accountNumber);
+    }
+    balance = balance.subtract(amount);
+  }
+
+  public void credit(BigDecimal amount) {
+    if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+      throw new IllegalArgumentException("Credit amount must be greater than 0");
+    }
+    balance = balance.add(amount);
+  }
 }
