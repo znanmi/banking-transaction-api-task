@@ -1,5 +1,7 @@
 package io.github.znanmi.banking.service;
 
+import java.util.Optional;
+
 import org.springframework.stereotype.Service;
 
 import io.github.znanmi.banking.dto.AccountResponseDTO;
@@ -20,6 +22,14 @@ public class AccountService {
         accountRepository.nextAccountNumber());
     Account saved = accountRepository.save(account);
     return toResponse(saved);
+  }
+
+  public AccountResponseDTO getAccount(String accountNumber) {
+    Optional<Account> result = accountRepository.findByAccountNumber(accountNumber);
+    if (result.isEmpty()) {
+      throw new IllegalArgumentException("Account not found: " + accountNumber);
+    }
+    return toResponse(result.get());
   }
 
   private AccountResponseDTO toResponse(Account account) {
