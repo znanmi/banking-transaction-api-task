@@ -50,22 +50,31 @@ public class TransferService {
     }
     Account toAccount = toResult.get();
 
-    // TODO: lock both accounts with concurrency branch
+    // Lock both accounts in a fixed order (smaller account number first) to prevent
+    // deadlock
+    Account firstLock = fromNumber.compareTo(toNumber) < 0 ? fromAccount : toAccount;
+    Account secondLock = (firstLock == fromAccount) ? toAccount : fromAccount;
 
-    // make transaction, debit first and credit after
-    fromAccount.debit(amount);
-    toAccount.credit(amount);
-    // add it to ledger, two entries, linked by one reference
     String transferReference = UUID.randomUUID().toString();
-    Instant now = Instant.now();
+    Instant now;
 
-    TransactionEntry debitEntry = new TransactionEntry(UUID.randomUUID().toString(), transferReference, fromNumber,
-        TransactionType.DEBIT, amount, fromAccount.getBalance(), toNumber, now);
-    TransactionEntry creditEntry = new TransactionEntry(UUID.randomUUID().toString(), transferReference, toNumber,
-        TransactionType.CREDIT, amount, toAccount.getBalance(), fromNumber, now);
+    synchronized (firstLock) {
+      synchronized (secondLock) {
+        // make transaction, debit first and credit after
+        fromAccount.debit(amount);
+        toAccount.credit(amount);
 
-    transactionRepository.save(debitEntry);
-    transactionRepository.save(creditEntry);
+        // add it to ledger, two entries, linked by one reference
+        now = Instant.now();
+        TransactionEntry debitEntry = new TransactionEntry(UUID.randomUUID().toString(), transferReference, fromNumber,
+            TransactionType.DEBIT, amount, fromAccount.getBalance(), toNumber, now);
+        TransactionEntry creditEntry = new TransactionEntry(UUID.randomUUID().toString(), transferReference, toNumber,
+            TransactionType.CREDIT, amount, toAccount.getBalance(), fromNumber, now);
+
+        transactionRepository.save(debitEntry);
+        transactionRepository.save(creditEntry);
+      }
+    }
     // build receipt for response
     return new TransferResponseDTO(transferReference, fromNumber, toNumber, amount, now);
   }
