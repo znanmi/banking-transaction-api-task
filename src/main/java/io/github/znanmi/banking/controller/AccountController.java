@@ -4,8 +4,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import io.github.znanmi.banking.dto.AccountResponseDTO;
 import io.github.znanmi.banking.dto.CreateAccountRequestDTO;
+import io.github.znanmi.banking.dto.TransactionResponseDTO;
 import io.github.znanmi.banking.service.AccountService;
 import jakarta.validation.Valid;
+
+import java.util.List;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +36,12 @@ public class AccountController {
   @GetMapping("/{accountNumber}")
   public ResponseEntity<AccountResponseDTO> getAccount(@PathVariable String accountNumber) {
     AccountResponseDTO response = accountService.getAccount(accountNumber);
+    return ResponseEntity.ok(response);
+  }
+
+  @GetMapping("/{accountNumber}/transactions")
+  public ResponseEntity<List<TransactionResponseDTO>> getTransactionHistory(@PathVariable String accountNumber) {
+    List<TransactionResponseDTO> response = accountService.getTransactionHistory(accountNumber);
     return ResponseEntity.ok(response);
   }
 }
