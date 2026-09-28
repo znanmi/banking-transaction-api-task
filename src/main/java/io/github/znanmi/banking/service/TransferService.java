@@ -9,6 +9,8 @@ import org.springframework.stereotype.Service;
 
 import io.github.znanmi.banking.dto.TransferRequestDTO;
 import io.github.znanmi.banking.dto.TransferResponseDTO;
+import io.github.znanmi.banking.exception.AccountNotFoundException;
+import io.github.znanmi.banking.exception.SameAccountTransferException;
 import io.github.znanmi.banking.model.Account;
 import io.github.znanmi.banking.model.TransactionEntry;
 import io.github.znanmi.banking.model.TransactionType;
@@ -32,19 +34,19 @@ public class TransferService {
 
     // validations: if to and from account are the same
     if (fromNumber.equals(toNumber)) {
-      throw new IllegalArgumentException("Cannot transfer to the same account");
+      throw new SameAccountTransferException();
     }
 
     // find both accounts, check if they exist
     Optional<Account> fromResult = accountRepository.findByAccountNumber(fromNumber);
     if (fromResult.isEmpty()) {
-      throw new IllegalArgumentException("Account not found: " + fromNumber);
+      throw new AccountNotFoundException(fromNumber);
     }
     Account fromAccount = fromResult.get();
 
     Optional<Account> toResult = accountRepository.findByAccountNumber(toNumber);
     if (toResult.isEmpty()) {
-      throw new IllegalArgumentException("Account not found: " + toNumber);
+      throw new AccountNotFoundException(toNumber);
     }
     Account toAccount = toResult.get();
 
