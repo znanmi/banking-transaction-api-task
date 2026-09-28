@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import io.github.znanmi.banking.dto.AccountResponseDTO;
 import io.github.znanmi.banking.dto.CreateAccountRequestDTO;
 import io.github.znanmi.banking.dto.TransactionResponseDTO;
+import io.github.znanmi.banking.exception.AccountNotFoundException;
 import io.github.znanmi.banking.model.Account;
 import io.github.znanmi.banking.model.TransactionEntry;
 import io.github.znanmi.banking.model.TransactionType;
@@ -42,7 +43,7 @@ public class AccountService {
   public AccountResponseDTO getAccount(String accountNumber) {
     Optional<Account> result = accountRepository.findByAccountNumber(accountNumber);
     if (result.isEmpty()) {
-      throw new IllegalArgumentException("Account not found: " + accountNumber);
+      throw new AccountNotFoundException(accountNumber);
     }
     return toResponse(result.get());
   }
@@ -50,7 +51,7 @@ public class AccountService {
   public List<TransactionResponseDTO> getTransactionHistory(String accountNumber) {
     Optional<Account> result = accountRepository.findByAccountNumber(accountNumber);
     if (result.isEmpty()) {
-      throw new IllegalArgumentException("Account not found: " + accountNumber);
+      throw new AccountNotFoundException(accountNumber);
     }
 
     List<TransactionEntry> entries = transactionRepository.findByAccountNumber(accountNumber);
