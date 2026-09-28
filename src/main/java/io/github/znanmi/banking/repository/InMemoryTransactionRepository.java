@@ -10,13 +10,11 @@ import org.springframework.stereotype.Repository;
 import io.github.znanmi.banking.model.TransactionEntry;
 
 @Repository
-// Not yet safe for concurrent saves to a new account; addressed in the
-// concurrency branch
 public class InMemoryTransactionRepository implements TransactionRepository {
   private final Map<String, List<TransactionEntry>> entriesByAccount = new ConcurrentHashMap<>();
 
   @Override
-  public TransactionEntry save(TransactionEntry entry) {
+  public synchronized TransactionEntry save(TransactionEntry entry) {
     List<TransactionEntry> list = entriesByAccount.get(entry.accountNumber());
     if (list == null) {
       list = new ArrayList<>();
@@ -27,7 +25,7 @@ public class InMemoryTransactionRepository implements TransactionRepository {
   }
 
   @Override
-  public List<TransactionEntry> findByAccountNumber(String accountNumber) {
+  public synchronized List<TransactionEntry> findByAccountNumber(String accountNumber) {
     List<TransactionEntry> list = entriesByAccount.get(accountNumber);
     if (list == null) {
       return new ArrayList<>();
